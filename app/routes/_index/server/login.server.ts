@@ -1,13 +1,13 @@
 import { Page } from "playwright";
+import { page } from "@/context.server";
 
 type Payload = {
   email: FormDataEntryValue | null;
   password: FormDataEntryValue | null;
   captcha: FormDataEntryValue | null;
-  page: Page;
 };
 
-export const login = async ({ email, password, page, captcha }: Payload) => {
+export const login = async ({ email, password, captcha }: Payload) => {
   await page.waitForLoadState();
   // htmlのname属性がMailAddressのinputにemailを入力
   await page.locator('input[name="MailAddress"]').fill(email as string);

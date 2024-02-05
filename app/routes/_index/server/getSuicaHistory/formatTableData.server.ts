@@ -1,10 +1,6 @@
-import { Page } from "playwright";
+import { page } from "@/context.server";
 
-export const formatTableData = async ({
-  page,
-}: {
-  page: Page;
-  }) => {
+export const formatTableData = async () => {
   // 外側のtdタグを基準にテーブルを特定するセレクタ
   const selector = ".historyTable table";
 

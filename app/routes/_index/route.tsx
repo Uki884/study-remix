@@ -2,9 +2,8 @@ import { json, type ActionFunctionArgs, type MetaFunction } from "@remix-run/nod
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { page } from "../../context.server";
 import { useState } from "react";
-import { formatTableData } from "./functions/formatTableData.server";
-import { login } from "./functions/login.server";
-import { validateAvailableSuica } from "./functions/isUnavailable.server";
+import { getCaptchaImage } from "./server/getCaptchaImage.server";
+import { getSuicaHistory } from "./server/getSuicaHistory/index.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -15,50 +14,18 @@ export const meta: MetaFunction = () => {
 
 export const loader = async () => {
   await page.goto('https://www.mobilesuica.com/index.aspx');
-
-  const visibleImage = await page.isVisible(".igc_TrendyCaptchaImage");
-  const visibleLogout = await page.isVisible('.logoutBox a');
-
-  if (visibleLogout) {
-    await page.click('.logoutBox a');
-    page.once('dialog', async dialog => {
-      await dialog.accept();
-    });
-  }
-
-  if (!visibleImage) {
-    return json({ captchaImageUrl: null })
-  }
-
-  const captcha = page.locator('.igc_TrendyCaptchaImage')
-
-  try {
-    const buffer = await captcha.screenshot();
-    return json({ captchaImageUrl: buffer.toString('base64') })
-  } catch (e) {
-    console.error(e);
-    await page.screenshot({ path: 'error.png', fullPage: false });
-    return json({ captchaImageUrl: null })
-  }
+  const captchaImageUrl = await getCaptchaImage();
+  return json({ captchaImageUrl })
 };
 
-// await page.screenshot({ path: 'screenshot2.png', fullPage: false });でデバッグ用のスクリーンショットを取得できる
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
   const email = formData.get('email');
   const password = formData.get('password');
   const captcha = formData.get('captcha');
+  const { data, error } = await getSuicaHistory({ email, password, captcha });
 
-  await login({ page, email, password, captcha });
-
-  const validateResult = await validateAvailableSuica({ page });
-
-  if (!validateResult.isAvailable) {
-    return json({ tableData: [], error: validateResult.message });
-  }
-  const result = await formatTableData({ page })
-
-  return json({ tableData: result, error: null });
+  return json({ data, error });
 };
 
 export default function Index() {
@@ -87,7 +54,7 @@ export default function Index() {
         <button type='submit'>ログイン</button>
 
         {actionData?.error && <div>{actionData.error}</div>}
-        { JSON.stringify(actionData?.tableData) }
+        { JSON.stringify(actionData?.data) }
       </Form>
     </div>
   );

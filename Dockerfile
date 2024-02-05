@@ -19,3 +19,26 @@ RUN apt-get update && apt-get install -y wget --no-install-recommends \
 
 # Playwright をインストールしてブラウザをセットアップ
 RUN npx playwright install
+
+# ワークディレクトリを作成
+WORKDIR /app
+
+# パッケージファイルをコピー
+
+COPY package.json /app/package.json
+
+# パッケージをインストール
+RUN npm install
+
+# ソースコードをコピー
+
+COPY . /app
+
+RUN npm run build
+
+# ポートを公開
+EXPOSE 3000
+
+# アプリケーションを起動
+
+CMD ["npm", "run", "start"]

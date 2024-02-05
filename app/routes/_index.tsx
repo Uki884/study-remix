@@ -1,12 +1,12 @@
-import { json, type ActionFunctionArgs, type MetaFunction, LoaderFunction, LoaderFunctionArgs, redirect } from "@remix-run/node";
+import { json, type ActionFunctionArgs, type MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { page } from "../context.server";
 import { useState } from "react";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: "Suicaの履歴取得" },
+    { name: "description", content: "Suicaの履歴を取得します" },
   ];
 };
 
@@ -23,7 +23,6 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
     page.once('dialog', async dialog => {
       await dialog.accept();
     });
-    await page.waitForSelector('.igc_TrendyCaptchaImage');
   }
 
   if (!visibleImage) {
@@ -42,6 +41,7 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
   }
 };
 
+// await page.screenshot({ path: 'screenshot2.png', fullPage: false });でデバッグ用のスクリーンショットを取得できる
 export const action = async ({ params, request }: ActionFunctionArgs) => {
   const formData = await request.formData()
   const email = formData.get('email');
@@ -57,12 +57,9 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
   await page.locator('#WebCaptcha1__editor').fill(captcha as string);
   // // ここで必要な情報を入力してログインボタンをクリック
   await page.click('button[name="LOGIN"]');
-  // const buffer = await page.locator('.igc_TrendyCaptchaImage').screenshot();
-  await page.screenshot({ path: 'screenshot.png', fullPage: false });
   await page.waitForSelector('#btn_sfHistory');
   // btn_sfHistoryの中のaタグをクリック
   await page.click('#btn_sfHistory a');
-  await page.screenshot({ path: 'screenshot2.png', fullPage: false });
 
   const closeText = '利用履歴表示が可能な時間は5:00～翌日0:50です。時間をお確かめの上、再度実行してください。'
   const pageContent = await page.textContent('body');
@@ -79,6 +76,7 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
 
   // 行データを格納するための配列
   let tableData = [];
+  rows.shift();
 
   for (const row of rows) {
     // 各行のセルデータを取得
@@ -87,15 +85,25 @@ export const action = async ({ params, request }: ActionFunctionArgs) => {
       const font = cell.querySelector('font');
       return font ? font.innerText.trim() : cell.innerText.trim();
     }));
+    // 1行目はヘッダなのでスキップ
+    // [ '', '月日', '種別', '利用場所', '種別', '利用場所', '残高', '入金・利用額' ]
 
-    console.log('cellsText', cellsText)
-    
+    // [ '', '01/02', '物販', '', '', '', '\\1,612', '-213' ]
+    cellsText.shift()
+    const data = {
+      date: cellsText[0],
+      startType: cellsText[1],
+      startStation: cellsText[2],
+      endType: cellsText[3],
+      endStation: cellsText[4],
+      balance: cellsText[5],
+      fare: cellsText[6],
+    }
     // 行データを配列に追加
-    tableData.push(cellsText);
+    tableData.push(data);
   }
-
-  // redirect('/dashboard');
-  return json({ tableData, error: null });
+  const filtererData = tableData.filter(data => data.startType !== '物販');
+  return json({ tableData: filtererData, error: null });
 };
 
 export default function Index() {
@@ -105,7 +113,7 @@ export default function Index() {
 
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Welcome to Remix</h1>
+      <h1>Suica !!!!!!</h1>
       <Form method="post">
         <div>
           <input type='email' placeholder='email' name='email' />
@@ -124,6 +132,7 @@ export default function Index() {
         <button type='submit'>ログイン</button>
 
         {actionData?.error && <div>{actionData.error}</div>}
+        { JSON.stringify(actionData?.tableData) }
       </Form>
     </div>
   );

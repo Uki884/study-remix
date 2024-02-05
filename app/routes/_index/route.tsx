@@ -1,9 +1,15 @@
 import { json, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { page } from "../../context.server";
-import { useState } from "react";
 import { getCaptchaImage } from "./server/getCaptchaImage.server";
-import { getSuicaHistory } from "./server/getSuicaHistory/index.server";
+import { getSuicaHistory, sfHistoryElement } from "./server/getSuicaHistory/index.server";
+import { InputError } from '@mantine/core';
+import styles from './styles.module.css';
+import { SuicaTable } from "./components/SuicaTable";
+import { login } from "./server/login.server";
+import { logout } from "./server/logout.server";
+import { LoginForm } from "./components/LoginForm";
+import { LoggedInForm } from "./components/LoggedInForm/LoggedInForm";
 
 export const meta: MetaFunction = () => {
   return [
@@ -14,47 +20,46 @@ export const meta: MetaFunction = () => {
 
 export const loader = async () => {
   await page.goto('https://www.mobilesuica.com/index.aspx');
+  const isLoggedIn = await page.isVisible(sfHistoryElement);
   const captchaImageUrl = await getCaptchaImage();
-  return json({ captchaImageUrl })
+  return json({ captchaImageUrl, isLoggedIn })
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
-  const email = formData.get('email');
-  const password = formData.get('password');
-  const captcha = formData.get('captcha');
-  const { data, error } = await getSuicaHistory({ email, password, captcha });
+  const action = formData.get("action")
 
-  return json({ data, error });
+  switch (action) {
+    case 'login': {
+      const email = formData.get('email');
+      const password = formData.get('password');
+      const captcha = formData.get('captcha');
+      await login({ email, password, captcha });
+    
+      const { data, error } = await getSuicaHistory();
+      return json({ data, error });
+    } case 'refetch': {
+      const { data, error } = await getSuicaHistory();
+      return json({ data, error });
+    } case 'logout': {
+      await logout();
+      return json({ data: [], error: null });
+    } default:
+      throw new Error(`Invalid action: ${action}`);
+  }
 };
 
 export default function Index() {
-  const data = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const [isVisiblePassword, setIsVisiblePassword] = useState(false);
 
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Suica !!!!!!</h1>
+    <div className={styles.index}>
+      <h1>Suicaの履歴取得</h1>
       <Form method="post">
-        <div>
-          <input type='email' placeholder='email' name='email' />
-        </div>
-        <div>
-          <input type={isVisiblePassword ? 'text' : 'password'} placeholder='password' name='password' />
-          <button type='button' onClick={() => setIsVisiblePassword(!isVisiblePassword)}>{ isVisiblePassword ?  '非表示': '表示'}</button>
-        </div>
-        <div>
-          下の画像に表示されている文字を半角で入力してください。画像に表示されている文字が読みにくい場合は、画像右側のボタンを押して再取得ができます。
-        </div>
-        { data.captchaImageUrl && <img src={`data:image/png;base64,${data.captchaImageUrl}`} title="" alt="" height="60" width="175" className="igc_TrendyCaptchaImage" />}
-        <div>
-          <input type='text' name='captcha' placeholder='captcha' />
-        </div>
-        <button type='submit'>ログイン</button>
-
-        {actionData?.error && <div>{actionData.error}</div>}
-        { JSON.stringify(actionData?.data) }
+        { loaderData.isLoggedIn ? <LoggedInForm /> : <LoginForm />}  
+        { actionData?.error && <InputError mt={'md'}>{ actionData?.error }</InputError> }
+        <SuicaTable />
       </Form>
     </div>
   );

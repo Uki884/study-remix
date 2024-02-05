@@ -1,23 +1,23 @@
-import { login } from "../login.server";
 import { validateAvailableSuica } from "./validateAvailableSuica.server";
 import { formatTableData } from "./formatTableData.server";
+import { page } from "@/context.server";
 
-type Payload = {
-  email: FormDataEntryValue | null;
-  password: FormDataEntryValue | null;
-  captcha: FormDataEntryValue | null;
-};
+export const sfHistoryElement = "#btn_sfHistory";
 
-export const getSuicaHistory = async ({ email, password, captcha }: Payload) => {
-  await login({ email, password, captcha });
+export const getSuicaHistory = async () => {
+  await page.goto('https://www.mobilesuica.com/index.aspx');
+  // 「SF(電子マネー)利用履歴」をクリック
+  await page.waitForSelector(sfHistoryElement);
+  // btn_sfHistoryの中のaタグをクリック
+  await page.click(`${sfHistoryElement} a`);
 
   const validateResult = await validateAvailableSuica();
 
+  page.screenshot({ path: 'error.png', fullPage: false });
   if (!validateResult.isAvailable) {
     return { data: [], error: validateResult.message };
   }
 
   const result = await formatTableData()
-
   return { data: result, error: "" }
 };

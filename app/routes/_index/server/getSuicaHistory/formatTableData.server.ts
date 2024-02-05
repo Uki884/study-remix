@@ -37,7 +37,7 @@ export const formatTableData = async () => {
     // 行データを配列に追加
     tableData.push(data);
   }
-  const filtererData = tableData.filter((data) => data.startType !== "物販");
+  const filtererData = tableData.filter((data) => !['物販', 'ｶｰﾄﾞ'].includes(data.startType));
 
   return filtererData;
 };

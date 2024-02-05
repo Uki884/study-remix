@@ -1,7 +1,10 @@
-import { json, type ActionFunctionArgs, type MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json, type ActionFunctionArgs, type MetaFunction } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { page } from "../context.server";
+import { page } from "../../context.server";
 import { useState } from "react";
+import { formatTableData } from "./functions/formatTableData.server";
+import { login } from "./functions/login.server";
+import { validateAvailableSuica } from "./functions/isUnavailable.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,11 +13,9 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export const loader = async ({ context }: LoaderFunctionArgs) => {
-  const currentUrl = page.url();
-
+export const loader = async () => {
   await page.goto('https://www.mobilesuica.com/index.aspx');
-  
+
   const visibleImage = await page.isVisible(".igc_TrendyCaptchaImage");
   const visibleLogout = await page.isVisible('.logoutBox a');
 
@@ -42,68 +43,22 @@ export const loader = async ({ context }: LoaderFunctionArgs) => {
 };
 
 // await page.screenshot({ path: 'screenshot2.png', fullPage: false });でデバッグ用のスクリーンショットを取得できる
-export const action = async ({ params, request }: ActionFunctionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const formData = await request.formData()
   const email = formData.get('email');
   const password = formData.get('password');
   const captcha = formData.get('captcha');
-  await page.waitForLoadState()
-  // console.log('page', await page.content());
-  // htmlのname属性がMailAddressのinputにemailを入力
-  await page.locator('input[name="MailAddress"]').fill(email as string);
-  // // htmlのname属性がPasswordのinputにpasswordを入力
-  await page.getByRole('textbox', { name: 'パスワード(半角)' }).fill(password as string);
-  // // htmlのname属性がCaptchaのinputにcaptchaを入力
-  await page.locator('#WebCaptcha1__editor').fill(captcha as string);
-  // // ここで必要な情報を入力してログインボタンをクリック
-  await page.click('button[name="LOGIN"]');
-  await page.waitForSelector('#btn_sfHistory');
-  // btn_sfHistoryの中のaタグをクリック
-  await page.click('#btn_sfHistory a');
 
-  const closeText = '利用履歴表示が可能な時間は5:00～翌日0:50です。時間をお確かめの上、再度実行してください。'
-  const pageContent = await page.textContent('body');
+  await login({ page, email, password, captcha });
 
-  if (pageContent?.includes(closeText)) {
-    return json({ tableData: [], error: closeText });
+  const validateResult = await validateAvailableSuica({ page });
+
+  if (!validateResult.isAvailable) {
+    return json({ tableData: [], error: validateResult.message });
   }
+  const result = await formatTableData({ page })
 
-  // 外側のtdタグを基準にテーブルを特定するセレクタ
-  const selector = '.historyTable table';
-
-  // テーブル内の全ての行を取得
-  const rows = await page.$$(`${selector} > tbody > tr`);
-
-  // 行データを格納するための配列
-  let tableData = [];
-  rows.shift();
-
-  for (const row of rows) {
-    // 各行のセルデータを取得
-    const cellsText = await row.$$eval('td', cells => cells.map(cell => {
-      // fontタグ内のテキストまたはセルのテキストを取得
-      const font = cell.querySelector('font');
-      return font ? font.innerText.trim() : cell.innerText.trim();
-    }));
-    // 1行目はヘッダなのでスキップ
-    // [ '', '月日', '種別', '利用場所', '種別', '利用場所', '残高', '入金・利用額' ]
-
-    // [ '', '01/02', '物販', '', '', '', '\\1,612', '-213' ]
-    cellsText.shift()
-    const data = {
-      date: cellsText[0],
-      startType: cellsText[1],
-      startStation: cellsText[2],
-      endType: cellsText[3],
-      endStation: cellsText[4],
-      balance: cellsText[5],
-      fare: cellsText[6],
-    }
-    // 行データを配列に追加
-    tableData.push(data);
-  }
-  const filtererData = tableData.filter(data => data.startType !== '物販');
-  return json({ tableData: filtererData, error: null });
+  return json({ tableData: result, error: null });
 };
 
 export default function Index() {

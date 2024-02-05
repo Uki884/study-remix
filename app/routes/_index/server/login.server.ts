@@ -1,13 +1,13 @@
 import { Page } from "playwright";
+import { page } from "@/context.server";
 
 type Payload = {
   email: FormDataEntryValue | null;
   password: FormDataEntryValue | null;
   captcha: FormDataEntryValue | null;
-  page: Page;
 };
 
-export const login = async ({ email, password, page, captcha }: Payload) => {
+export const login = async ({ email, password, captcha }: Payload) => {
   await page.waitForLoadState();
   // htmlのname属性がMailAddressのinputにemailを入力
   await page.locator('input[name="MailAddress"]').fill(email as string);
@@ -19,9 +19,4 @@ export const login = async ({ email, password, page, captcha }: Payload) => {
   await page.locator("#WebCaptcha1__editor").fill(captcha as string);
   // // ここで必要な情報を入力してログインボタンをクリック
   await page.click('button[name="LOGIN"]');
-
-  // 「SF(電子マネー)利用履歴」をクリック
-  await page.waitForSelector("#btn_sfHistory");
-  // btn_sfHistoryの中のaタグをクリック
-  await page.click("#btn_sfHistory a");
 };

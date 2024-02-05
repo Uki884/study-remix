@@ -4,14 +4,16 @@ import { action } from "../../route";
 
 export const SuicaTable = () => {
   const data = useActionData<typeof action>();
-  const rows = data?.data.map((data, index) => (
-    <Table.Tr key={index}>
-      <Table.Td>{data.date}</Table.Td>
-      <Table.Td>{data.startStation}</Table.Td>
-      <Table.Td>{data.endStation}</Table.Td>
-      <Table.Td>{data.fare.replace('-', '')}</Table.Td>
-    </Table.Tr>
-  ));
+
+  const rows = data?.data.map((element, index) => {
+    return (
+      <Table.Tr key={index}>
+        <Table.Td>{element?.date}</Table.Td>
+        <Table.Td>{element?.startStation}</Table.Td>
+        <Table.Td>{element?.endStation}</Table.Td>
+        <Table.Td>{element?.fare.replace('-', '')}</Table.Td>
+      </Table.Tr>
+    )});
 
   return (
     <Table>

@@ -7,6 +7,9 @@ installGlobals();
 
 export default defineConfig({
   plugins: [remix()],
+  build: {
+    target: ['es2022', 'edge89', 'firefox89', 'chrome89', 'safari15']
+  },
   server: {
     port: 3000,
     host: true,

@@ -4,7 +4,6 @@ import { loader } from "../../route";
 
 export const LoginForm = () => {
   const loaderData = useLoaderData<typeof loader>();
-  console.log('loaderData', loaderData)
   return (
     <>
       <TextInput label={'メールアドレス'} type='email' placeholder='email' name='email' />

@@ -3,8 +3,11 @@ import { singleton } from './singleton.server'
 
 const browser = await chromium.launch({ headless: true });
 console.log('Browser launched');
-const browserContext = await singleton('context', async () => await browser.newContext())
-const page = await singleton('page', async () => await browserContext.newPage())
 
-export { browserContext, page };
+const getPageById = async (id: string) => {
+  const context = await singleton('context', () => browser.newContext(), id);
+  return await singleton('page', () => context.newPage(), id);
+};
+
+export { getPageById };
 

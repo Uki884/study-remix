@@ -10,6 +10,16 @@ export class Suica {
     this.browserId = browserId;
   }
 
+  async isLoggedIn() {
+    const page = await getPageById(this.browserId);
+    return await page.isVisible(sfHistoryElement);
+  }
+
+  public async gotoSuicaTop() {
+    const page = await getPageById(this.browserId);
+    await page.goto('https://www.mobilesuica.com/index.aspx');
+  }
+
   public async retrieveSuicaHistory() {
     const page = await getPageById(this.browserId);
     await page.goto('https://www.mobilesuica.com/index.aspx');
@@ -86,8 +96,8 @@ export class Suica {
     return filtererData;
   }
 
-  public async getCaptchaImage (browserId: string) {
-    const page = await getPageById(browserId);
+  public async getCaptchaImage () {
+    const page = await getPageById(this.browserId);
     const captchaElement = '.igc_TrendyCaptchaImage';
 
     const visibleImage = await page.isVisible(captchaElement);
@@ -108,13 +118,12 @@ export class Suica {
     }
   };
 
-  public async login({ email, password, captcha, browserId }: {
+  public async login({ email, password, captcha }: {
     email: FormDataEntryValue | null;
     password: FormDataEntryValue | null;
     captcha: FormDataEntryValue | null;
-    browserId: string;
   }) {
-    const page = await getPageById(browserId);
+    const page = await getPageById(this.browserId);
     await page.waitForLoadState();
     // htmlのname属性がMailAddressのinputにemailを入力
     await page.locator('input[name="MailAddress"]').fill(email as string);

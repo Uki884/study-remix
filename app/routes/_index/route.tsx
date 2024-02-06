@@ -1,7 +1,6 @@
 import { json, type ActionFunctionArgs, type MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { getPageById } from "../../context.server";
-import { Suica, sfHistoryElement } from "./server/suica.server";
+import { Suica } from "./server/suica.server";
 import { InputError } from '@mantine/core';
 import styles from './styles.module.css';
 import { SuicaTable } from "./components/SuicaTable";
@@ -22,13 +21,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   );
   const browserId = new Date().getTime().toString(); // 例えばタイムスタンプをIDとして使用
   const sessionBrowserId = session.get('browserId');
+  console.log('sessionBrowserId', sessionBrowserId)
 
-  const page = await getPageById(sessionBrowserId || browserId);
-  await page.goto('https://www.mobilesuica.com/index.aspx');
   const suica = new Suica(sessionBrowserId || browserId);
+  await suica.gotoSuicaTop();
 
-  const isLoggedIn = await page.isVisible(sfHistoryElement);
-  const captchaImageUrl = await suica.getCaptchaImage(sessionBrowserId || browserId);
+  const isLoggedIn = await suica.isLoggedIn();
+  const captchaImageUrl = await suica.getCaptchaImage();
 
   if (!sessionBrowserId) {
     session.set('browserId', browserId);
@@ -64,7 +63,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       const email = formData.get('email');
       const password = formData.get('password');
       const captcha = formData.get('captcha');
-      await suica.login({ email, password, captcha, browserId: sessionBrowserId });
+      await suica.login({ email, password, captcha });
     
       const { data, error } = await suica.retrieveSuicaHistory();
       return json({ data, error });

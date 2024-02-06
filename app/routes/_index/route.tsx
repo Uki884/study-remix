@@ -36,7 +36,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   return json({ captchaImageUrl, isLoggedIn }, {
     headers: {
-      "Set-Cookie": await commitSession(session, { expires: new Date(Date.now() + 60) }),
+      "Set-Cookie": await commitSession(session),
     },
   })
 };
@@ -46,15 +46,18 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     request.headers.get("Cookie")
   );
   const sessionBrowserId = session.get('browserId');
+  const suica = new Suica(sessionBrowserId);
 
   if (!sessionBrowserId) {
-    throw new Error('Invalid session');
+    return json({ data: [], error: null }, {
+      headers: {
+        "Set-Cookie": await destroySession(session),
+      },
+    });
   }
 
   const formData = await request.formData()
   const action = formData.get("action")
-
-  const suica = new Suica(sessionBrowserId);
 
   switch (action) {
     case 'login': {

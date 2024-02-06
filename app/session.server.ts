@@ -7,7 +7,6 @@ const { getSession, commitSession, destroySession } =
       domain: process.env.DOMAIN,
       expires: new Date(Date.now() + (20 * 60 * 1000)), 
       httpOnly: true,
-      maxAge: 60,
       path: "/",
       sameSite: "lax",
       secrets: ["s3cret1"],

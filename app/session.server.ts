@@ -5,8 +5,8 @@ const { getSession, commitSession, destroySession } =
     cookie: {
       name: "__session",
       domain: process.env.DOMAIN,
-      expires: new Date(Date.now() + (20 * 60 * 1000)), 
       httpOnly: true,
+      maxAge: 20 * 60, // 20分に設定
       path: "/",
       sameSite: "lax",
       secrets: ["s3cret1"],

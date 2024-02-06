@@ -5,7 +5,7 @@ const { getSession, commitSession, destroySession } =
     cookie: {
       name: "__session",
       domain: process.env.DOMAIN,
-      expires: new Date(Date.now() + 60),
+      expires: new Date(Date.now() + (20 * 60 * 1000)), 
       httpOnly: true,
       maxAge: 60,
       path: "/",

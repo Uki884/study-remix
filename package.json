@@ -17,6 +17,7 @@
     "@remix-run/node": "^2.5.1",
     "@remix-run/react": "^2.5.1",
     "@remix-run/serve": "^2.5.1",
+    "dayjs": "^1.11.10",
     "isbot": "^4.1.0",
     "playwright": "^1.41.2",
     "react": "^18.2.0",

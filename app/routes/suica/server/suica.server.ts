@@ -1,4 +1,6 @@
 import { getPageById } from "@/context.server";
+import { dayjs } from "@/lib/dayjs";
+dayjs.locale("ja")
 
 export const sfHistoryElement = "#btn_sfHistory";
 export const logoutElement = '.logoutBox a';
@@ -80,7 +82,8 @@ export class Suica {
       // [ '', '01/02', '物販', '', '', '', '\\1,612', '-213' ]
       cellsText.shift();
       const data = {
-        date: cellsText[0],
+        date: dayjs(cellsText[0]).format('YYYY-MM-DD (dd)'),
+        weekDay: dayjs(cellsText[0]).format('ddd'),
         startType: cellsText[1],
         startStation: cellsText[2],
         endType: cellsText[3],
@@ -91,7 +94,7 @@ export class Suica {
       // 行データを配列に追加
       tableData.push(data);
     }
-    const filtererData = tableData.filter((data) => !['物販', 'ｶｰﾄﾞ'].includes(data.startType));
+    const filtererData = tableData.filter((data) => !['物販', 'ｶｰﾄﾞ', '繰'].includes(data.startType) && !['土', '日'].includes(data.weekDay));
   
     return filtererData;
   }

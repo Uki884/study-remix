@@ -3,18 +3,22 @@ import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction } from "@remix-run/node";
 import {
   Links,
+  LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
+  useNavigate,
 } from "@remix-run/react";
-import { MantineProvider } from '@mantine/core';
+import { Button, Container, MantineProvider } from '@mantine/core';
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
 export default function App() {
+  const navigation = useNavigate();
+
   return (
     <html lang="en">
       <head>
@@ -25,9 +29,13 @@ export default function App() {
       </head>
       <body>
         <MantineProvider>
+          <Container>
+            <Button mt='lg' onClick={() => navigation('/')} variant='outline'>TOPへ</Button>
+          </Container>
           <Outlet />
           <ScrollRestoration />
-          <Scripts />          
+          <Scripts />
+          <LiveReload />
         </MantineProvider>
       </body>
     </html>

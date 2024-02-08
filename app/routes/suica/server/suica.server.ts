@@ -1,15 +1,16 @@
 import { getPageById } from "@/context.server";
 import { dayjs } from "@/lib/dayjs";
-dayjs.locale("ja")
 
 export const sfHistoryElement = "#btn_sfHistory";
 export const logoutElement = '.logoutBox a';
 
 export class Suica {
   browserId: string;
+  now: dayjs.Dayjs;
 
   constructor(browserId: string) {
     this.browserId = browserId;
+    this.now = dayjs();
   }
 
   async isLoggedIn() {
@@ -24,7 +25,7 @@ export class Suica {
 
   public async retrieveSuicaHistory() {
     const page = await getPageById(this.browserId);
-    await page.goto('https://www.mobilesuica.com/index.aspx');
+    await this.gotoSuicaTop();
     // 「SF(電子マネー)利用履歴」をクリック
     await page.waitForSelector(sfHistoryElement);
     // btn_sfHistoryの中のaタグをクリック
@@ -82,7 +83,8 @@ export class Suica {
       // [ '', '01/02', '物販', '', '', '', '\\1,612', '-213' ]
       cellsText.shift();
       const data = {
-        date: dayjs(cellsText[0]).format('YYYY-MM-DD (dd)'),
+        date: dayjs(cellsText[0]).format('M/D (dd)'),
+        originalDate: dayjs(cellsText[0], 'MM/DD'),
         weekDay: dayjs(cellsText[0]).format('ddd'),
         startType: cellsText[1],
         startStation: cellsText[2],
@@ -94,7 +96,13 @@ export class Suica {
       // 行データを配列に追加
       tableData.push(data);
     }
-    const filtererData = tableData.filter((data) => !['物販', 'ｶｰﾄﾞ', '繰'].includes(data.startType) && !['土', '日'].includes(data.weekDay));
+    const filtererData = tableData.filter((data) => {
+      if (['物販', 'ｶｰﾄﾞ', '繰'].includes(data.startType)) return false
+      if (['土', '日'].includes(data.weekDay)) return false;
+      // 今月のデータのみを抽出
+      if (this.now.startOf('month').format('MM') !== data.originalDate.format('MM')) return false;
+      return true;
+    });
   
     return filtererData;
   }

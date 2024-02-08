@@ -1,5 +1,5 @@
 up:
-	docker-compose up
+	docker-compose -p app up
 down:
 	docker-compose down
 docker-app-exec:

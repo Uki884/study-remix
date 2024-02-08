@@ -9,11 +9,12 @@ import { LoggedInForm } from "./components/LoggedInForm/LoggedInForm";
 import { getSession, commitSession, destroySession } from "../../session.server";
 import { destroySingleton } from "@/singleton.server";
 import { useEffect, useLayoutEffect, useState } from "react";
+import { dayjs } from "@/lib/dayjs";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "Suicaの履歴から今月の出社日数を表示します" },
-    { name: "description", content: "Suicaの履歴から今月の出社日数を表示します" },
+    { title: "今月の出社経費" },
+    { name: "description", content: "Suicaの履歴から今月の出社経費を表示します" },
   ];
 };
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -112,7 +113,7 @@ export default function Index() {
 
   return (
     <div className={styles.index}>
-      <h1>Suicaから出社日確認</h1>
+      <h1>今月の出社経費</h1>
       <Form method="post">
         { loaderData.isLoggedIn ? <LoggedInForm /> : <LoginForm />}  
         { actionData?.error && <InputError mt={'md'}>{ actionData?.error }</InputError> }

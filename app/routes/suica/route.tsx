@@ -9,7 +9,6 @@ import { LoggedInForm } from "./components/LoggedInForm/LoggedInForm";
 import { getSession, commitSession, destroySession } from "../../session.server";
 import { destroySingleton } from "@/singleton.server";
 import { useEffect, useLayoutEffect, useState } from "react";
-import { dayjs } from "@/lib/dayjs";
 
 export const meta: MetaFunction = () => {
   return [

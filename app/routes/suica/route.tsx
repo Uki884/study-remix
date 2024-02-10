@@ -21,10 +21,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     request.headers.get("Cookie")
   );
   const browserId = new Date().getTime().toString(); // 例えばタイムスタンプをIDとして使用
-  const sessionBrowserId = session.get('browserId');
+  const sessionBrowserId = session.get('browserId') as string;
   console.log('sessionBrowserId', sessionBrowserId)
 
-  const suica = new Suica(sessionBrowserId || browserId);
+  const suica = new Suica({ browserId: sessionBrowserId || browserId });
   await suica.gotoSuicaTop();
 
   const isLoggedIn = await suica.isLoggedIn();
@@ -59,7 +59,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const action = formData.get("action")
   const startStation = formData.get('startStation') as string;
   const endStation = formData.get('endStation') as string;
-  const suica = new Suica(sessionBrowserId, startStation, endStation);
+  const suica = new Suica({ browserId: sessionBrowserId, startStation, endStation});
 
   switch (action) {
     case 'login': {

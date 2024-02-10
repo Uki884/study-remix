@@ -1,7 +1,7 @@
 import { json, type ActionFunctionArgs, type MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { Suica } from "./server/suica.server";
-import { InputError, TextInput } from '@mantine/core';
+import { InputError } from '@mantine/core';
 import styles from './styles.module.css';
 import { SuicaTable } from "./components/SuicaTable";
 import { LoginForm } from "./components/LoginForm";
@@ -46,7 +46,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     request.headers.get("Cookie")
   );
   const sessionBrowserId = session.get('browserId');
-  const suica = new Suica(sessionBrowserId);
 
   if (!sessionBrowserId) {
     return json({ data: [], error: null }, {
@@ -58,6 +57,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const formData = await request.formData()
   const action = formData.get("action")
+  const startStation = formData.get('startStation') as string;
+  const endStation = formData.get('endStation') as string;
+  const suica = new Suica(sessionBrowserId, startStation, endStation);
 
   switch (action) {
     case 'login': {
@@ -92,17 +94,17 @@ export default function Index() {
 
   return (
     <div className={styles.index}>
-      <h1>今月の出社経費</h1>
+      <h1>今月の出社経費を計算</h1>
       <Form method="post">
         { loaderData.isLoggedIn ? <LoggedInForm /> : <LoginForm />}  
         { actionData?.error && <InputError mt={'md'}>{ actionData?.error }</InputError> }
         { loaderData.isLoggedIn && (
             <>
-            <FilterForm />
-            <SuicaTable />
+              <FilterForm />
+              <SuicaTable />
             </>
         )}
-      </Form>
+        </Form>
     </div>
   );
 }

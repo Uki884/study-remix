@@ -3,13 +3,16 @@ import { dayjs } from "@/lib/dayjs";
 
 export const sfHistoryElement = "#btn_sfHistory";
 export const logoutElement = '.logoutBox a';
-
 export class Suica {
   browserId: string;
+  startStation: string;
+  endStation: string;
   now: dayjs.Dayjs;
 
-  constructor(browserId: string) {
+  constructor(browserId: string, startStation: string, endStation: string) {
     this.browserId = browserId;
+    this.startStation = startStation;
+    this.endStation = endStation;
     this.now = dayjs();
   }
 
@@ -57,12 +60,12 @@ export class Suica {
 
   public async extractTransactionData() {
     const page = await getPageById(this.browserId);
-
     // 外側のtdタグを基準にテーブルを特定するセレクタ
     const selector = ".historyTable table";
     await page.waitForSelector(selector);
     // テーブル内の全ての行を取得
     const rows = await page.$$(`${selector} > tbody > tr`);
+
     rows.shift();
     // 行データを格納するための配列
     const tableData = rows.map(async (row)=> {
@@ -90,7 +93,7 @@ export class Suica {
     })
 
     const result = await Promise.all(tableData);
-    const filtererData = result.filter((data) => {
+    const filteredData = result.filter((data) => {
       if (['物販', 'ｶｰﾄﾞ', '繰'].includes(data.startType)) return false
       if (['土', '日'].includes(data.weekDay)) return false;
       // 今月のデータのみを抽出
@@ -98,7 +101,7 @@ export class Suica {
       return true;
     });
   
-    return filtererData;
+    return filteredData;
   }
 
   public async getCaptchaImage () {

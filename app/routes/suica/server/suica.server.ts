@@ -60,27 +60,20 @@ export class Suica {
 
     // 外側のtdタグを基準にテーブルを特定するセレクタ
     const selector = ".historyTable table";
-  
+    await page.waitForSelector(selector);
     // テーブル内の全ての行を取得
     const rows = await page.$$(`${selector} > tbody > tr`);
     rows.shift();
     // 行データを格納するための配列
-    const tableData = [];
-    rows.shift();
-  
-    for (const row of rows) {
+    const tableData = rows.map(async (row)=> {
+      await row.isVisible()
       // 各行のセルデータを取得
-      const cellsText = await row.$$eval("td", (cells) =>
-        cells.map((cell) => {
-          // fontタグ内のテキストまたはセルのテキストを取得
-          const font = cell.querySelector("font");
-          return font ? font.innerText.trim() : cell.innerText.trim();
-        })
+        const cellsText = await row.$$eval("td", (cells) => {
+          return cells.map((cell) => {
+            return cell.innerText.trim();
+          })
+        }
       );
-      // 1行目はヘッダなのでスキップ
-      // [ '', '月日', '種別', '利用場所', '種別', '利用場所', '残高', '入金・利用額' ]
-  
-      // [ '', '01/02', '物販', '', '', '', '\\1,612', '-213' ]
       cellsText.shift();
       const data = {
         date: dayjs(cellsText[0]).format('M/D (dd)'),
@@ -93,10 +86,11 @@ export class Suica {
         balance: cellsText[5],
         fare: cellsText[6],
       };
-      // 行データを配列に追加
-      tableData.push(data);
-    }
-    const filtererData = tableData.filter((data) => {
+      return data;
+    })
+
+    const result = await Promise.all(tableData);
+    const filtererData = result.filter((data) => {
       if (['物販', 'ｶｰﾄﾞ', '繰'].includes(data.startType)) return false
       if (['土', '日'].includes(data.weekDay)) return false;
       // 今月のデータのみを抽出

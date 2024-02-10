@@ -8,7 +8,7 @@ import { LoginForm } from "./components/LoginForm";
 import { LoggedInForm } from "./components/LoggedInForm/LoggedInForm";
 import { getSession, commitSession, destroySession } from "../../session.server";
 import { destroySingleton } from "@/singleton.server";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { FilterForm } from "./components/FilterForm";
 
 export const meta: MetaFunction = () => {
   return [
@@ -58,9 +58,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const formData = await request.formData()
   const action = formData.get("action")
-  const startStation = formData.get("startStation")
-  const endStation = formData.get("endStation")
-  console.log('action', startStation, endStation)
 
   switch (action) {
     case 'login': {
@@ -92,23 +89,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Index() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  
-  const [startStation, setStartStation] = useState('');
-  const [endStation, setEndStation] = useState('');
-
-  // synchronize initially
-  useLayoutEffect(() => {
-    const startStation = window.localStorage.getItem("startStation");
-    const endStation = window.localStorage.getItem("endStation");
-    if (startStation) setStartStation(startStation);
-    if (endStation) setEndStation(endStation);
-  }, []);
-
-  // synchronize on change
-  useEffect(() => {
-    window.localStorage.setItem("startStation", startStation);
-    window.localStorage.setItem("endStation", endStation);
-  }, [startStation, endStation]);
 
   return (
     <div className={styles.index}>
@@ -117,24 +97,10 @@ export default function Index() {
         { loaderData.isLoggedIn ? <LoggedInForm /> : <LoginForm />}  
         { actionData?.error && <InputError mt={'md'}>{ actionData?.error }</InputError> }
         { loaderData.isLoggedIn && (
-          <>
-            <TextInput
-              label={'乗車駅'}
-              type='text'
-              placeholder='乗車駅を入力してください'
-              value={startStation}
-              onChange={(event) => setStartStation(event.currentTarget.value)}
-            />
-            <TextInput
-              label={'降車駅'}
-              type='text'
-              name='endStation'
-              placeholder='降車駅を入力してください'
-              value={endStation}
-              onChange={(event) => setEndStation(event.currentTarget.value)}
-            />
-            <SuicaTable startStation={startStation} endStation={endStation} />
-          </>
+            <>
+            <FilterForm />
+            <SuicaTable />
+            </>
         )}
       </Form>
     </div>

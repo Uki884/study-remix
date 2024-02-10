@@ -19,6 +19,7 @@
     "@remix-run/serve": "^2.5.1",
     "dayjs": "^1.11.10",
     "isbot": "^4.1.0",
+    "jotai": "^2.6.4",
     "playwright": "^1.41.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

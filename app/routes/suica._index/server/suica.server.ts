@@ -4,12 +4,21 @@ import { dayjs } from "@/lib/dayjs";
 export const sfHistoryElement = "#btn_sfHistory";
 export const logoutElement = '.logoutBox a';
 
+type SuicaPayload = {
+  browserId: string;
+  startStation?: string;
+  endStation?: string;
+}
 export class Suica {
   browserId: string;
+  startStation: string;
+  endStation: string;
   now: dayjs.Dayjs;
 
-  constructor(browserId: string) {
+  constructor({ browserId, startStation, endStation }: SuicaPayload) {
     this.browserId = browserId;
+    this.startStation = startStation || "";
+    this.endStation = endStation || "";
     this.now = dayjs();
   }
 
@@ -57,12 +66,12 @@ export class Suica {
 
   public async extractTransactionData() {
     const page = await getPageById(this.browserId);
-
     // 外側のtdタグを基準にテーブルを特定するセレクタ
     const selector = ".historyTable table";
     await page.waitForSelector(selector);
     // テーブル内の全ての行を取得
     const rows = await page.$$(`${selector} > tbody > tr`);
+
     rows.shift();
     // 行データを格納するための配列
     const tableData = rows.map(async (row)=> {
@@ -90,15 +99,27 @@ export class Suica {
     })
 
     const result = await Promise.all(tableData);
-    const filtererData = result.filter((data) => {
+    const filteredData = result.filter((data) => {
       if (['物販', 'ｶｰﾄﾞ', '繰'].includes(data.startType)) return false
       if (['土', '日'].includes(data.weekDay)) return false;
       // 今月のデータのみを抽出
       if (this.now.startOf('month').format('MM') !== data.originalDate.format('MM')) return false;
       return true;
     });
+ 
+    const filteredByStation = filteredData.filter((item) => {
+      if (this.startStation === '' && this.endStation === '') return true
   
-    return filtererData;
+      // 乗車駅と降車駅が一致する場合
+      if (item?.startStation === this.startStation && item?.endStation === this.endStation) return true
+      // 乗車駅と降車駅が逆の場合
+      if (item?.startStation === this.endStation && item?.endStation === this.startStation) return true
+  
+      if (item?.startStation === this.endStation) return true
+    
+      return false;
+    });
+    return filteredByStation;
   }
 
   public async getCaptchaImage () {
@@ -129,7 +150,6 @@ export class Suica {
     captcha: FormDataEntryValue | null;
   }) {
     const page = await getPageById(this.browserId);
-    await page.waitForLoadState();
     // htmlのname属性がMailAddressのinputにemailを入力
     await page.locator('input[name="MailAddress"]').fill(email as string);
     // // htmlのname属性がPasswordのinputにpasswordを入力

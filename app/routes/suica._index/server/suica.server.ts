@@ -24,7 +24,9 @@ export class Suica {
 
   async isLoggedIn() {
     const page = await getPageById(this.browserId);
-    return await page.isVisible(sfHistoryElement);
+    if (await page.isVisible(sfHistoryElement) || await page.isVisible('#btn_mobtop_node')) {
+      return true;
+    }
   }
 
   public async gotoSuicaTop() {
@@ -164,6 +166,7 @@ export class Suica {
 
   public async logout() {
     const page = await getPageById(this.browserId);
+    await this.gotoSuicaTop();
     await page.click('.logoutBox a');
     page.once('dialog', async dialog => {
       await dialog.accept();

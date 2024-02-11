@@ -14,7 +14,6 @@ export const useCaptchaFetcher = () => {
   )
 
   useEffect(() => {
-    console.log('fetcher', fetcher.data, fetcher.state)
     if (fetcher.state === 'idle' && !fetcher.data) {
       getCaptcha();
     }

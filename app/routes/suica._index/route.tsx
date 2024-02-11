@@ -12,19 +12,20 @@ import { FilterForm } from "./components/FilterForm";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "今月の出社経費" },
-    { name: "description", content: "Suicaの履歴から今月の出社経費を表示します" },
+    { title: "今月の通勤経費" },
+    { name: "description", content: "Suicaの履歴から今月の通勤経費を表示します" },
   ];
 };
+const browserId = new Date().getTime().toString(); // 例えばタイムスタンプをIDとして使用
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const session = await getSession(
     request.headers.get("Cookie")
   );
-  const browserId = new Date().getTime().toString(); // 例えばタイムスタンプをIDとして使用
   const sessionBrowserId = session.get('browserId') as string;
   const suica = new Suica({ browserId: sessionBrowserId || browserId });
-  await suica.gotoSuicaTop();
-
+  if (!await suica.isLoggedIn()) {
+    await suica.gotoSuicaTop();
+  }
   const isLoggedIn = await suica.isLoggedIn();
 
   if (!sessionBrowserId) {
@@ -57,7 +58,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const startStation = formData.get('startStation') as string;
   const endStation = formData.get('endStation') as string;
   const suica = new Suica({ browserId: sessionBrowserId, startStation, endStation});
-
+  
   switch (action) {
     case 'login': {
       const email = formData.get('email');
@@ -91,7 +92,7 @@ export default function Index() {
 
   return (
     <div className={styles.index}>
-      <h1>今月の出社経費を計算</h1>
+      <h1>今月の通勤経費を計算</h1>
       <Form method="post">
         { loaderData.isLoggedIn ? <LoggedInForm /> : <LoginForm />}  
         { actionData?.error && <InputError mt={'md'}>{ actionData?.error }</InputError> }

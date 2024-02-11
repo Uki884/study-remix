@@ -6,7 +6,7 @@ import styles from './styles.module.css';
 import { SuicaTable } from "./components/SuicaTable";
 import { LoginForm } from "./components/LoginForm";
 import { LoggedInForm } from "./components/LoggedInForm/LoggedInForm";
-import { getSession, commitSession, destroySession } from "../../session.server";
+import { getSession, commitSession, destroySession } from "../../../session.server";
 import { destroySingleton } from "@/singleton.server";
 import { FilterForm } from "./components/FilterForm";
 

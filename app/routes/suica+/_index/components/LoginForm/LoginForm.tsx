@@ -1,6 +1,6 @@
 import { TextInput, PasswordInput, Button, Text } from "@mantine/core";
 import { useNavigation } from "@remix-run/react";
-import { useCaptchaFetcher } from "../../../suica.captcha/hooks/useCaptchaFetcher";
+import { useCaptchaFetcher } from "../../../captcha/hooks/useCaptchaFetcher";
 
 export const LoginForm = () => {
   const fetcher = useCaptchaFetcher();

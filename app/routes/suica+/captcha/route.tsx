@@ -1,6 +1,6 @@
 import { getSession } from "@/session.server";
 import { LoaderFunction, json } from "@remix-run/node";
-import { Suica } from "../_index/server/suica.server";
+import { Suica } from "../server/suica.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   const session = await getSession(request.headers.get("Cookie"));

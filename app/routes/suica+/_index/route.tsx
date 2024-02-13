@@ -1,6 +1,6 @@
-import { json, type ActionFunctionArgs, type MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json, type ActionFunctionArgs, type MetaFunction, LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
-import { Suica } from "./server/suica.server";
+import { Suica } from "../server/suica.server";
 import { InputError } from '@mantine/core';
 import styles from './styles.module.css';
 import { SuicaTable } from "./components/SuicaTable";
@@ -74,7 +74,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     } case 'logout': {
       await suica.logout();
       destroySingleton(sessionBrowserId);
-      return json({ data: [], error: null }, {
+      return redirect('/suica', {
         headers: {
           "Set-Cookie": await destroySession(session),
         },

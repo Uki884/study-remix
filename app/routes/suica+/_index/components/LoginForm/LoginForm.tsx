@@ -1,6 +1,6 @@
 import { TextInput, PasswordInput, Button, Text } from "@mantine/core";
 import { useNavigation } from "@remix-run/react";
-import { useCaptchaFetcher } from "../../../captcha/hooks/useCaptchaFetcher";
+import { useCaptchaFetcher } from "../../../captcha/fetcher/useCaptchaFetcher";
 
 export const LoginForm = () => {
   const fetcher = useCaptchaFetcher();
@@ -23,7 +23,7 @@ export const LoginForm = () => {
         </>
       )}
       <TextInput label={'captcha認証'} type='text' name='captcha' placeholder='画像に表示されている文字を入力' />
-      <Button type='submit' mt={'lg'} name="action" value="login" disabled={isCreating}>ログイン</Button>
+      <Button type='submit' mt={'lg'} name="action" value="login" disabled={isCreating}>{ isCreating ? 'ログイン中...' : 'ログイン' }</Button>
     </>
   )
 };

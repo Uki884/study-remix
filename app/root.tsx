@@ -31,8 +31,8 @@ export default function App() {
         <MantineProvider>
           <Container>
             <Button mt='lg' onClick={() => navigation('/')} variant='outline'>TOPへ</Button>
+            <Outlet />
           </Container>
-          <Outlet />
           <ScrollRestoration />
           <Scripts />
           <LiveReload />

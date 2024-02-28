@@ -8,7 +8,7 @@ export const useCaptchaFetcher = () => {
   });
 
   const getCaptcha = useCallback(() => {
-      fetcher.load("/suica/captcha")
+      fetcher.load("/captcha")
     },
     [fetcher],
   )

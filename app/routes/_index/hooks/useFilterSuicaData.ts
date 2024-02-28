@@ -22,6 +22,11 @@ export const useFilterSuicaData = () => {
   }).filter((data) => {
     if (data?.startStation === startStation) return true
     return false;
+  }).map(data=> {
+    return {
+      ...data,
+      fare: Number(data?.fare.replace('-', '').replace(/,/g, "")) * 2
+    }
   }) ?? [];
 
   return {

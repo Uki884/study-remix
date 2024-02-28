@@ -5,7 +5,7 @@ export const SuicaTable = () => {
   const { filteredSuicaData } = useFilterSuicaData();
 
   const totalPrice = filteredSuicaData.reduce((acc, cur) => {
-    return acc + Number(cur?.fare.replace('-', '').replace(/,/g, ""));
+    return acc + cur.fare;
   }, 0);
 
   const rows = filteredSuicaData.map((element, index) => {
@@ -15,7 +15,7 @@ export const SuicaTable = () => {
         <Table.Td>{element?.date}</Table.Td>
         <Table.Td>{element?.startStation}({ element?.startType})</Table.Td>
         <Table.Td>{element?.endStation}({ element?.endType})</Table.Td>
-        <Table.Td>{element?.fare.replace('-', '')} 円</Table.Td>
+        <Table.Td>{element?.fare} 円</Table.Td>
       </Table.Tr>
     )});
 

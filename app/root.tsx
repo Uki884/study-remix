@@ -5,13 +5,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useNavigate,
 } from "@remix-run/react";
-import { Button, Container, MantineProvider } from '@mantine/core';
+import { Container, MantineProvider } from '@mantine/core';
 
 export default function App() {
-  const navigation = useNavigate();
-
   return (
     <html lang="en">
       <head>
@@ -23,7 +20,6 @@ export default function App() {
       <body>
         <MantineProvider>
           <Container>
-            <Button mt='lg' onClick={() => navigation('/')} variant='outline'>TOPへ</Button>
             <Outlet />
           </Container>
           <ScrollRestoration />

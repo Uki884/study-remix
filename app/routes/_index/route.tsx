@@ -1,13 +1,14 @@
 import { json, type ActionFunctionArgs, type MetaFunction, LoaderFunctionArgs, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import { Suica } from "@/routes/_index/serverActions/suica.server";
-import { InputError } from '@mantine/core';
+import { Flex, InputError, Text } from '@mantine/core';
 import styles from './styles.module.css';
 import { SuicaTable } from "./components/SuicaTable";
 import { LoginForm } from "./components/LoginForm";
 import { LoggedInForm } from "./components/LoggedInForm/LoggedInForm";
 import { getSession, commitSession, destroySession } from "../../session.server";
 import { destroySingleton } from "@/singleton.server";
+import { useFilterSuicaData } from "./hooks/useFilterSuicaData";
 
 export const meta: MetaFunction = () => {
   return [
@@ -73,7 +74,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     } case 'logout': {
       await suica.logout();
       destroySingleton(sessionBrowserId);
-      return redirect('/suica', {
+      return redirect('/', {
         headers: {
           "Set-Cookie": await destroySession(session),
         },
@@ -88,15 +89,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Index() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
+  const { filteredSuicaData } = useFilterSuicaData();
 
   return (
     <div className={styles.index}>
-      <h1>今月の出社日数</h1>
       <Form method="post">
-        { loaderData.isLoggedIn ? <LoggedInForm /> : <LoginForm />}  
+        { loaderData.isLoggedIn ? <LoggedInForm /> : <LoginForm /> }
         { actionData?.error && <InputError mt={'md'}>{ actionData?.error }</InputError> }
-        { loaderData.isLoggedIn && (
-          <SuicaTable />
+        { filteredSuicaData.length > 0 && (
+          <>
+            <Flex>
+              <Text mt={16} fz={24}>今月の出社回数: { filteredSuicaData.length }回</Text>
+            </Flex>
+            <Text mt={16} fz={'md'} fw={'bold'}>内訳</Text>
+            <SuicaTable />
+          </>
         )}
         </Form>
     </div>

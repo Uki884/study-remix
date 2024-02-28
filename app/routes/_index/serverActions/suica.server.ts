@@ -27,6 +27,7 @@ export class Suica {
     if (await page.isVisible(sfHistoryElement) || await page.isVisible('#btn_mobtop_node')) {
       return true;
     }
+    return false;
   }
 
   public async gotoSuicaTop() {
@@ -36,9 +37,14 @@ export class Suica {
 
   public async retrieveSuicaHistory() {
     const page = await getPageById(this.browserId);
+    const isLoggedIn = await this.isLoggedIn();
+    if (!isLoggedIn) {
+      return { data: [], error: 'ログインに失敗しました' };
+    }
+  
     await this.gotoSuicaTop();
     // 「SF(電子マネー)利用履歴」をクリック
-    await page.waitForSelector(sfHistoryElement);
+     await page.waitForSelector(sfHistoryElement);
     // btn_sfHistoryの中のaタグをクリック
     await page.click(`${sfHistoryElement} a`);
   
@@ -64,7 +70,7 @@ export class Suica {
     }
   
     return { result: true, message: "" };
-  };
+  }
 
   public async extractTransactionData() {
     const page = await getPageById(this.browserId);
@@ -77,7 +83,6 @@ export class Suica {
     rows.shift();
     // 行データを格納するための配列
     const tableData = rows.map(async (row)=> {
-      await row.isVisible()
       // 各行のセルデータを取得
         const cellsText = await row.$$eval("td", (cells) => {
           return cells.map((cell) => {
@@ -144,7 +149,7 @@ export class Suica {
       await page.screenshot({ path: 'error.png', fullPage: false });
       return null;
     }
-  };
+  }
 
   public async login({ email, password, captcha }: {
     email: FormDataEntryValue | null;
@@ -162,7 +167,7 @@ export class Suica {
     await page.locator("#WebCaptcha1__editor").fill(captcha as string);
     // // ここで必要な情報を入力してログインボタンをクリック
     await page.click('button[name="LOGIN"]');
-  };
+  }
 
   public async logout() {
     const page = await getPageById(this.browserId);

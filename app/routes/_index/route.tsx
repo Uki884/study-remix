@@ -73,7 +73,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     } case 'logout': {
       await suica.logout();
       destroySingleton(sessionBrowserId);
-      return redirect('/suica', {
+      return redirect('/', {
         headers: {
           "Set-Cookie": await destroySession(session),
         },

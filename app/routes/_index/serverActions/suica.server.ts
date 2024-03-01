@@ -11,14 +11,10 @@ type SuicaPayload = {
 }
 export class Suica {
   browserId: string;
-  startStation: string;
-  endStation: string;
   now: dayjs.Dayjs;
 
-  constructor({ browserId, startStation, endStation }: SuicaPayload) {
+  constructor({ browserId }: SuicaPayload) {
     this.browserId = browserId;
-    this.startStation = startStation || "";
-    this.endStation = endStation || "";
     this.now = dayjs();
   }
 
@@ -77,6 +73,7 @@ export class Suica {
     // 外側のtdタグを基準にテーブルを特定するセレクタ
     const selector = ".historyTable table";
     await page.waitForSelector(selector);
+    
     // テーブル内の全ての行を取得
     const rows = await page.$$(`${selector} > tbody > tr`);
 
@@ -91,10 +88,12 @@ export class Suica {
         }
       );
       cellsText.shift();
+      const thisYear = this.now.format('YYYY');
+      const formatDate = `${thisYear}/${cellsText[0]}`;
       const data = {
-        date: dayjs(cellsText[0]).format('M/D (dd)'),
-        originalDate: dayjs(cellsText[0], 'MM/DD'),
-        weekDay: dayjs(cellsText[0]).format('ddd'),
+        date: dayjs(formatDate).format('M/D (dd)'),
+        originalDate: dayjs(formatDate, 'MM/DD'),
+        weekDay: dayjs(formatDate).format('ddd'),
         startType: cellsText[1],
         startStation: cellsText[2],
         endType: cellsText[3],
@@ -106,27 +105,26 @@ export class Suica {
     })
 
     const result = await Promise.all(tableData);
+    
     const filteredData = result.filter((data) => {
       if (['物販', 'ｶｰﾄﾞ', '繰'].includes(data.startType)) return false
       if (['土', '日'].includes(data.weekDay)) return false;
-      // 今月のデータのみを抽出
-      if (this.now.startOf('month').format('MM') !== data.originalDate.format('MM')) return false;
+      // 今日が1週目だったら前月分のデータを取得。それ以外は今月分のデータを取得
+      const prevMonth = this.now.subtract(1, 'month');
+      // その月の最初の日
+      const startOfMonth = this.now.startOf('month');
+      // 渡された日付と月初めとの週の差分
+      const weekOffset = this.now.diff(startOfMonth, 'week');
+      const thisWeekNumber = weekOffset + 1;
+
+      if (thisWeekNumber === 1) {
+        if (prevMonth.startOf('month').format('MM') !== data.originalDate.format('MM')) return false;
+      } else {
+        if (this.now.startOf('month').format('MM') !== data.originalDate.format('MM')) return false;
+      }
       return true;
     });
- 
-    const filteredByStation = filteredData.filter((item) => {
-      if (this.startStation === '' && this.endStation === '') return true
-  
-      // 乗車駅と降車駅が一致する場合
-      if (item?.startStation === this.startStation && item?.endStation === this.endStation) return true
-      // 乗車駅と降車駅が逆の場合
-      if (item?.startStation === this.endStation && item?.endStation === this.startStation) return true
-  
-      if (item?.startStation === this.endStation) return true
-    
-      return false;
-    });
-    return filteredByStation;
+    return filteredData;
   }
 
   public async getCaptchaImage () {
@@ -176,5 +174,5 @@ export class Suica {
     page.once('dialog', async dialog => {
       await dialog.accept();
     });
-  };
+  }
 }

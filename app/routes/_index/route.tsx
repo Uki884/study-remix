@@ -55,9 +55,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const formData = await request.formData()
   const action = formData.get("action")
-  const startStation = formData.get('startStation') as string;
-  const endStation = formData.get('endStation') as string;
-  const suica = new Suica({ browserId: sessionBrowserId, startStation, endStation});
+  const suica = new Suica({ browserId: sessionBrowserId });
   
   switch (action) {
     case 'login': {

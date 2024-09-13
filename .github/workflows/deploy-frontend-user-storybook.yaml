@@ -1,0 +1,19 @@
+name: Deploy to S3 for storybook
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr_commented:
+    name: PR comment
+    if: ${{ github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo A comment on PR "$NUMBER"
+        env:
+          NUMBER: ${{ github.event.issue.number }}

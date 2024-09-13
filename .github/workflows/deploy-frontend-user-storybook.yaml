@@ -14,6 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: refs/pull/${{ github.event.issue.number }}/head
       - name: set upload destination directory name
         run: |
           DEST_DIR=${{ github.event.issue.number }}

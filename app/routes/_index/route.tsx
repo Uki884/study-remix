@@ -7,7 +7,7 @@ import { SuicaTable } from "./components/SuicaTable";
 import { LoginForm } from "./components/LoginForm";
 import { LoggedInForm } from "./components/LoggedInForm/LoggedInForm";
 import { getSession, commitSession, destroySession } from "../../session.server";
-import { destroySingleton } from "@/singleton.server";
+import { forget } from "@epic-web/remember";
 import { useFilterSuicaData } from "./hooks/useFilterSuicaData";
 
 export const meta: MetaFunction = () => {
@@ -71,7 +71,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ data, error });
     } case 'logout': {
       await suica.logout();
-      destroySingleton(sessionBrowserId);
+      forget(sessionBrowserId);
+
       return redirect('/', {
         headers: {
           "Set-Cookie": await destroySession(session),
@@ -87,14 +88,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Index() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  const { filteredSuicaData } = useFilterSuicaData();
+  if (!actionData?.data) return null;
 
+  const { filteredSuicaData } = useFilterSuicaData(actionData.data);
+  console.log('filteredSuicaData', filteredSuicaData)
   return (
     <div className={styles.index}>
       <Form method="post">
         { loaderData.isLoggedIn ? <LoggedInForm /> : <LoginForm /> }
         { actionData?.error && <InputError mt={'md'}>{ actionData?.error }</InputError> }
-        { filteredSuicaData.length > 0 && (
+        { (
           <>
             <Flex>
               <Text mt={16} fz={24}>今月の出社回数: { filteredSuicaData.length }回</Text>

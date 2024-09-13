@@ -45,12 +45,13 @@ export class Suica {
     await page.click(`${sfHistoryElement} a`);
   
     const available = await this.checkAvailability();
-  
+    console.log('available', available)
     if (!available.result) {
       return { data: [], error: available.message };
     }
   
     const result = await this.extractTransactionData()
+    console.log('result', result)
     return { data: result, error: "" }
   }
 
@@ -176,3 +177,5 @@ export class Suica {
     });
   }
 }
+
+export type SuicaResponse = Awaited<ReturnType<Suica['retrieveSuicaHistory']>>['data'];

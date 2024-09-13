@@ -12,6 +12,7 @@
     "upgrade": "npx upgrade-remix"
   },
   "dependencies": {
+    "@epic-web/remember": "^1.1.0",
     "@mantine/core": "^7.5.1",
     "@mantine/hooks": "^7.5.1",
     "@remix-run/css-bundle": "2.8.1",

@@ -1,14 +1,14 @@
-import { useActionData } from "@remix-run/react";
-import { action } from "../route";
 import { useAtomValue } from "jotai";
 import { endStationAtom, startStationAtom } from "../components/FilterForm";
+import { SuicaResponse } from "../serverActions/suica.server";
 
-export const useFilterSuicaData = () => {
-  const data = useActionData<typeof action>();
+export const useFilterSuicaData = (data: SuicaResponse) => {
   const startStation = useAtomValue(startStationAtom)
   const endStation = useAtomValue(endStationAtom)
 
-  const filteredSuicaData = data?.data.filter((item) => {
+  if (!data) return { filteredSuicaData: [] }
+
+  const filteredSuicaData = data.filter((item) => {
     if (startStation === '' && endStation === '') return true
 
     // 乗車駅と降車駅が一致する場合

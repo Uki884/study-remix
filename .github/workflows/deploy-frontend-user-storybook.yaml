@@ -21,9 +21,6 @@ jobs:
       deploy: ${{ steps.check-deploy.outputs.deploy }}
       ref: ${{ steps.check-deploy.outputs.ref }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Check if deploy is needed and set ref
         id: check-deploy
         run: |

@@ -33,18 +33,18 @@ jobs:
               if [ "${{ github.event.comment.body }}" == "/deploy-storybook" ]; then
                 echo "deploy=true" >> $GITHUB_OUTPUT
                 echo "ref=refs/pull/${{ github.event.issue.number }}/head" >> $GITHUB_OUTPUT
-                echo "dest_dir=pr_${{ github.event.issue.number }}" >> $GITHUB_ENV
+                echo "dest_dir=pr_${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
               else
                 echo "deploy=false" >> $GITHUB_OUTPUT
               fi
             elif [ "${{ github.event.pull_request.merged }}" == "true" ]; then
               echo "deploy=true" >> $GITHUB_OUTPUT
               echo "ref=refs/heads/main" >> $GITHUB_OUTPUT
-              echo "dest_dir=main" >> $GITHUB_ENV
+              echo "dest_dir=main" >> $GITHUB_OUTPUT
             elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
               echo "deploy=true" >> $GITHUB_OUTPUT
               echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
-              echo "dest_dir=main" >> $GITHUB_ENV
+              echo "dest_dir=main" >> $GITHUB_OUTPUT
             else
               echo "deploy=false" >> $GITHUB_OUTPUT
             fi

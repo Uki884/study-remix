@@ -57,3 +57,14 @@ jobs:
           echo "DEST_DIR=${DEST_DIR}" >> $GITHUB_ENV
       - run: |
           echo A comment on PR "${DEST_DIR}"
+      - name: post preview url to pull-request
+        uses: actions/github-script@v3
+        with:
+          script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: 'storybookのURLはこちら\n' +
+                "https://test/${DEST_DIR}/index.html"
+            })

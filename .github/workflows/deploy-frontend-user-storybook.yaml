@@ -52,6 +52,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.check-deploy.outputs.ref }}
+      - run: |
+          echo "PR comment ${{ needs.check-deploy.outputs.is_pr }}"
       - name: post preview url to pull-request
         uses: actions/github-script@v3
         with:

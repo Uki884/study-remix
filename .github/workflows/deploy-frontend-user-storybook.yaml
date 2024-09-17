@@ -25,12 +25,14 @@ jobs:
       deploy: ${{ steps.check-deploy.outputs.deploy }}
       ref: ${{ steps.check-deploy.outputs.ref }}
       dest_dir: ${{ steps.check-deploy.outputs.dest_dir }}
+      is_pr: ${{ steps.check-deploy.outputs.is_pr }}
     steps:
       - name: Check if deploy is needed and set env
         id: check-deploy
         run: |
           if [ -n "${{ github.event.issue.pull_request }}" ] && [ "${{ github.event.comment.body }}" == "/deploy-storybook" ]; then
             echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "is_pr=true" >> $GITHUB_OUTPUT
             echo "ref=refs/pull/${{ github.event.issue.number }}/head" >> $GITHUB_OUTPUT
             echo "dest_dir=pr_${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
@@ -43,7 +45,7 @@ jobs:
   pr_commented:
     name: PR comment
     needs: check-deploy
-    if: ${{needs.check-deploy.outputs.deploy == 'true'}}
+    if: ${{needs.check-deploy.outputs.deploy == 'true'}} && ${{needs.check-deploy.outputs.is_pr == 'true'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

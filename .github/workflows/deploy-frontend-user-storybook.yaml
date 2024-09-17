@@ -43,7 +43,7 @@ jobs:
   pr_commented:
     name: PR comment
     needs: check-deploy
-    if: ${{needs.check-deploy.outputs.deploy == 'true'}} && ${{ github.event.issue.pull_request }}
+    if: ${{needs.check-deploy.outputs.deploy == 'true'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

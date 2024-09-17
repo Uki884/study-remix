@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - "app/context.server.ts"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -34,6 +35,9 @@ jobs:
             elif [ "${{ github.event.pull_request.merged }}" == "true" ]; then
               echo "deploy=true" >> $GITHUB_OUTPUT
               echo "ref=refs/heads/main" >> $GITHUB_OUTPUT
+            elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+              echo "deploy=true" >> $GITHUB_OUTPUT
+              echo "ref=${{ github.ref_name }}" >> $GITHUB_OUTPUT
             else
               echo "deploy=false" >> $GITHUB_OUTPUT
             fi

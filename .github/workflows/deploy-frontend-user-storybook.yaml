@@ -6,9 +6,12 @@ on:
     branches:
       - main
     paths:
-      - "app/context.server.ts"
-      
+      - "app/context.server.ts"      
   workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ./app
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

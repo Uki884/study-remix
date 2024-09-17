@@ -33,6 +33,7 @@ jobs:
       dest_dir: ${{ steps.check-deploy.outputs.dest_dir }}
       is_pr: ${{ steps.check-deploy.outputs.is_pr }}
     steps:
+      - uses: actions/checkout@v4
       - name: Check if deploy is needed and set env
         id: check-deploy
         run: |

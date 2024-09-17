@@ -6,7 +6,6 @@ export const singleton = <Value>(
   valueFactory: () => Promise<Value>,
   id?: string, // ブラウザまたはコンテキストのIDを追加
 ): Promise<Value> => {
-  console.log('singleton count', Object.keys(g.__singletons).length);
   const uniqueName = id ? `${name}_${id}` : name; // IDがあればそれを使って一意の名前を生成
   g.__singletons[uniqueName] ??= valueFactory();
   return g.__singletons[uniqueName] as Promise<Value>;

@@ -66,5 +66,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: 'storybookのURLはこちら\n' +
-                "https://test/${DEST_DIR}/index.html"
+                "https://test/${{env.DEST_DIR}}/index.html"
             })

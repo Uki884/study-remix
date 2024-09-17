@@ -37,6 +37,7 @@ jobs:
             echo "dest_dir=pr_${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "is_pr=false" >> $GITHUB_OUTPUT
             echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
             echo "dest_dir=${{ github.ref_name }}" >> $GITHUB_OUTPUT
           else

@@ -24,23 +24,27 @@ jobs:
     outputs:
       deploy: ${{ steps.check-deploy.outputs.deploy }}
       ref: ${{ steps.check-deploy.outputs.ref }}
+      dest_dir: ${{ steps.check-deploy.outputs.dest_dir }}
     steps:
-      - name: Check if deploy is needed and set ref
+      - name: Check if deploy is needed and set env
         id: check-deploy
         run: |
             if [ -n "${{ github.event.issue.pull_request }}" ]; then
               if [ "${{ github.event.comment.body }}" == "/deploy-storybook" ]; then
                 echo "deploy=true" >> $GITHUB_OUTPUT
                 echo "ref=refs/pull/${{ github.event.issue.number }}/head" >> $GITHUB_OUTPUT
+                echo "dest_dir=pr_${{ github.event.issue.number }}" >> $GITHUB_ENV
               else
                 echo "deploy=false" >> $GITHUB_OUTPUT
               fi
             elif [ "${{ github.event.pull_request.merged }}" == "true" ]; then
               echo "deploy=true" >> $GITHUB_OUTPUT
               echo "ref=refs/heads/main" >> $GITHUB_OUTPUT
+              echo "dest_dir=main" >> $GITHUB_ENV
             elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
               echo "deploy=true" >> $GITHUB_OUTPUT
               echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
+              echo "dest_dir=main" >> $GITHUB_ENV
             else
               echo "deploy=false" >> $GITHUB_OUTPUT
             fi
@@ -53,13 +57,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.check-deploy.outputs.ref }}
-      - name: set upload destination directory name
-        run: |
-          DEST_DIR=${{ github.event.issue.number }}
-          [ -z $DEST_DIR ] && DEST_DIR=main
-          echo "DEST_DIR=pr-${DEST_DIR}" >> $GITHUB_ENV
-      - run: |
-          echo A comment on PR "${DEST_DIR}"
       - name: post preview url to pull-request
         uses: actions/github-script@v3
         with:
@@ -69,5 +66,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: 'storybookのURLはこちら\n' +
-                "https://test/${{env.DEST_DIR}}/index.html"
+                "https://test/${{needs.check-deploy.outputs.dest_dir}}/index.html"
             })

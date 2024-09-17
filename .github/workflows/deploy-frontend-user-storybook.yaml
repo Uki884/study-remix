@@ -17,6 +17,9 @@ concurrency:
 permissions:
   pull-requests: write
 
+env:
+  BUCKET_NAME: shogun-staging-storybook
+
 jobs:
   check-deploy:
     runs-on: ubuntu-latest
@@ -34,12 +37,12 @@ jobs:
             echo "deploy=true" >> $GITHUB_OUTPUT
             echo "is_pr=true" >> $GITHUB_OUTPUT
             echo "ref=refs/pull/${{ github.event.issue.number }}/head" >> $GITHUB_OUTPUT
-            echo "dest_dir=pr_${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+            echo "dest_dir=${{ env.BUCKET_NAME }}/storybook/pr_${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
           elif [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "deploy=true" >> $GITHUB_OUTPUT
             echo "is_pr=false" >> $GITHUB_OUTPUT
             echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
-            echo "dest_dir=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+            echo "dest_dir=${{ env.BUCKET_NAME }}/storybook/${{ github.ref_name }}" >> $GITHUB_OUTPUT
           else
             echo "deploy=false" >> $GITHUB_OUTPUT
           fi
@@ -54,6 +57,7 @@ jobs:
           ref: ${{ needs.check-deploy.outputs.ref }}
       - run: |
           echo "PR comment ${{ needs.check-deploy.outputs.is_pr }}"
+          echo "dest_dir ${{needs.check-deploy.outputs.dest_dir}}"
       - name: post preview url to pull-request
         uses: actions/github-script@v3
         with:
@@ -63,5 +67,5 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: 'storybookのURLはこちら\n' +
-                "https://test/${{needs.check-deploy.outputs.dest_dir}}/index.html"
+                "https://${{needs.check-deploy.outputs.dest_dir}}/index.html"
             })

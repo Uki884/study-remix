@@ -46,7 +46,7 @@ jobs:
   pr_commented:
     name: PR comment
     needs: check-deploy
-    if: ${{needs.check-deploy.outputs.deploy == 'true'}} && ${{needs.check-deploy.outputs.is_pr == 'true'}}
+    if: ${{needs.check-deploy.outputs.deploy == 'true' && needs.check-deploy.outputs.is_pr == 'true'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

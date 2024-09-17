@@ -2,12 +2,12 @@ name: Deploy to S3 for storybook
 on:
   issue_comment:
     types: [created]
-  pull_request:
-    types: [closed]
+  push:
     branches:
       - main
     paths:
       - "app/context.server.ts"
+      
   workflow_dispatch:
 
 concurrency:
@@ -37,16 +37,10 @@ jobs:
               else
                 echo "deploy=false" >> $GITHUB_OUTPUT
               fi
-            elif [ "${{ github.event.pull_request.merged }}" == "true" ]; then
-              echo "deploy=true" >> $GITHUB_OUTPUT
-              echo "ref=refs/heads/main" >> $GITHUB_OUTPUT
-              echo "dest_dir=main" >> $GITHUB_OUTPUT
-            elif [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            else
               echo "deploy=true" >> $GITHUB_OUTPUT
               echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
               echo "dest_dir=main" >> $GITHUB_OUTPUT
-            else
-              echo "deploy=false" >> $GITHUB_OUTPUT
             fi
   pr_commented:
     name: PR comment

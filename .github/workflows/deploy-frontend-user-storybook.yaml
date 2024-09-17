@@ -29,19 +29,15 @@ jobs:
       - name: Check if deploy is needed and set env
         id: check-deploy
         run: |
-            if [ -n "${{ github.event.issue.pull_request }}" ]; then
-              if [ "${{ github.event.comment.body }}" == "/deploy-storybook" ]; then
-                echo "deploy=true" >> $GITHUB_OUTPUT
-                echo "ref=refs/pull/${{ github.event.issue.number }}/head" >> $GITHUB_OUTPUT
-                echo "dest_dir=pr_${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
-              else
-                echo "deploy=false" >> $GITHUB_OUTPUT
-              fi
-            else
-              echo "deploy=true" >> $GITHUB_OUTPUT
-              echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
-              echo "dest_dir=main" >> $GITHUB_OUTPUT
-            fi
+          if [ -n "${{ github.event.issue.pull_request }}" ] && [ "${{ github.event.comment.body }}" == "/deploy-storybook" ]; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "ref=refs/pull/${{ github.event.issue.number }}/head" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "deploy=true" >> $GITHUB_OUTPUT
+            echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
+          else
+            echo "deploy=false" >> $GITHUB_OUTPUT
+          fi
   pr_commented:
     name: PR comment
     needs: check-deploy

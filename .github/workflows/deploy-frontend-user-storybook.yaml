@@ -36,7 +36,7 @@ jobs:
               fi
             elif [ "${{ github.event.pull_request.merged }}" == "true" ]; then
               echo "deploy=true" >> $GITHUB_OUTPUT
-              echo "ref=" >> $GITHUB_OUTPUT
+              echo "ref=refs/heads/main" >> $GITHUB_OUTPUT
             else
               echo "deploy=false" >> $GITHUB_OUTPUT
             fi

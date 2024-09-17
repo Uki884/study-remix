@@ -19,21 +19,24 @@ jobs:
     timeout-minutes: 5
     outputs:
       deploy: ${{ steps.check-deploy.outputs.deploy }}
+      ref: ${{ steps.check-deploy.outputs.ref }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Check if the comment is /deploy-storybook or pull request is closed
+      - name: Check if deploy is needed and set ref
         id: check-deploy
         run: |
             if [ -n "${{ github.event.issue.pull_request }}" ]; then
               if [ "${{ github.event.comment.body }}" == "/deploy-storybook" ]; then
                 echo "deploy=true" >> $GITHUB_OUTPUT
+                echo "ref=refs/pull/${{ github.event.issue.number }}/head" >> $GITHUB_OUTPUT
               else
                 echo "deploy=false" >> $GITHUB_OUTPUT
               fi
             elif [ "${{ github.event.pull_request.merged }}" == "true" ]; then
               echo "deploy=true" >> $GITHUB_OUTPUT
+              echo "ref=main" >> $GITHUB_OUTPUT
             else
               echo "deploy=false" >> $GITHUB_OUTPUT
             fi
@@ -45,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: refs/pull/${{ github.event.issue.number }}/head
+          ref: ${{ needs.check-deploy.outputs.ref }}
       - name: set upload destination directory name
         run: |
           DEST_DIR=${{ github.event.issue.number }}
